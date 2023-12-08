@@ -15,10 +15,10 @@ done
 
 # Check if the number does not contain a decimal point and append .0 to the version
 if ! [[ $version =~ \. ]]; then
-    version="$version.0" 
+    version="$version.0"
 fi
-# Checking if the MangoDB is previously installed or not 
-if yum list installed | grep -q mongodb-org-${version}; then
+# Checking if the MangoDB is previously installed or not
+if sudo yum list installed | grep -q "mongodb-org-${version}"; then
     echo -e "MongoDB\xF0\x9F\x8D\x83${version} is already installed."
     exit
 fi
@@ -26,21 +26,23 @@ fi
 
 echo -e "\nMangoDB ${version}\xF0\x9F\x8D\x83 is installing...."
 
-sudo bash -c "cat <<EOF > /etc/yum.repos.d/mongodb-org-${version}.repo
-[mongodb-org-${version}]
+centos_version=$(rpm -q --queryformat '%{VERSION}' centos-release)
+
+sudo bash -c 'cat <<EOF > /etc/yum.repos.d/mongodb-org-'${version}'.repo
+[mongodb-org-'${version}']
 name=MongoDB Repository
-baseurl=https://repo.mongodb.org/yum/redhat/9/mongodb-org/${version}/x86_64/
+baseurl=https://repo.mongodb.org/yum/redhat/'${centos_version}'/mongodb-org/'${version}'/x86_64/
 gpgcheck=1
 enabled=1
-gpgkey=https://www.mongodb.org/static/pgp/${version}.asc
-EOF"
-
+gpgkey=https://www.mongodb.org/static/pgp/server-'${version}'.asc
+EOF'
 sudo yum install -y mongodb-org
+
 error=$?
 # Checking if the MangoDB is installed or not
 
 if [ $error != 0 ]; then
-	echo -e "Installation of MangoDB\xF0\x9F\x8D\x83 $version failed with below error\n$error"
+	echo -e "Installation of MangoDB\xF0\x9F\x8D\x83 $version failed with below error\n"
  	exit
 fi   
 
